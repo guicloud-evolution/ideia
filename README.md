@@ -31,5 +31,8 @@ Permite o gerenciamento eficiente de contas do WhatsApp, com automações, contr
 
 ## 🛠 **Instalação e Execução**
 
-
+1. 📂 **Clone o repositório**:
+   ```bash
+   git clone https://github.com/maurolucasesteves/vabot-projeto.git
+   cd vabot-projeto
 # ideia

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Números - Gestão WhatsApp Bot</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h2>📞 Cadastro de Números</h2>
+        <form id="numeroForm" class="my-4">
+            <div class="mb-3">
+                <label for="nome" class="form-label">Nome</label>
+                <input type="text" class="form-control" id="nome" placeholder="Nome descritivo" required>
+            </div>
+            <div class="mb-3">
+                <label for="numero" class="form-label">Número de WhatsApp (com código do país)</label>
+                <input type="text" class="form-control" id="numero" placeholder="Ex: 5518999999999" required>
+                <div id="validacaoNumero" class="form-text text-danger d-none">⚠️ Número inválido. Verifique o formato.</div>
+            </div>
+            <button type="submit" class="btn btn-primary">➕ Adicionar Número</button>
+        </form>
+
+        <h3>📋 Lista de Números Cadastrados</h3>
+        <ul id="lista-numeros" class="list-group"></ul>
+
+        <button class="btn btn-secondary mt-3" onclick="window.location.href='index.html'">🔙 Voltar</button>
+    </div>
+
+    <script>
+        const { ipcRenderer } = window.electron;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            carregarNumeros();
+
+            document.getElementById('numeroForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const nome = document.getElementById('nome').value.trim();
+                const numero = document.getElementById('numero').value.trim();
+
+                if (!validarNumero(numero)) {
+                    document.getElementById('validacaoNumero').classList.remove('d-none');
+                    return;
+                } else {
+                    document.getElementById('validacaoNumero').classList.add('d-none');
+                }
+
+                const resultado = await ipcRenderer.invoke('adicionar-numero', { nome, numero });
+                if (resultado.sucesso) {
+                    alert(`✅ Número ${numero} (${nome}) cadastrado com sucesso!`);
+                    carregarNumeros();
+                    e.target.reset();
+                } else {
+                    alert(`❌ Erro ao cadastrar número: ${resultado.erro}`);
+                }
+            });
+        });
+
+        async function carregarNumeros() {
+            const lista = document.getElementById('lista-numeros');
+            const numeros = await ipcRenderer.invoke('listar-numeros');
+
+            lista.innerHTML = numeros.length > 0 ?
+                numeros.map((n) => `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        ${n.nome} (${n.numero})
+                        <div>
+                            <button class="btn btn-success btn-sm" onclick="iniciarBot('${n.numero}')">🟢 Iniciar</button>
+                            <button class="btn btn-danger btn-sm" onclick="pararBot('${n.numero}')">🔴 Parar</button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="removerNumero('${n.numero}')">🗑 Excluir</button>
+                        </div>
+                    </li>`
+                ).join('') : '<li class="list-group-item text-center">Nenhum número cadastrado.</li>';
+        }
+
+        async function iniciarBot(numero) {
+            await ipcRenderer.invoke('iniciar-bot-numero', numero);
+            carregarNumeros();
+        }
+
+        async function pararBot(numero) {
+            await ipcRenderer.invoke('parar-bot-numero', numero);
+            carregarNumeros();
+        }
+
+        async function removerNumero(numero) {
+            if (confirm('Tem certeza que deseja remover este número?')) {
+                await ipcRenderer.invoke('remover-numero', numero);
+                carregarNumeros();
+            }
+        }
+
+        function validarNumero(numero) {
+            const regex = /^(?:(?:\+|00)?(55)\s?)?(?:\(?([1-9][0-9])\)?\s?)?(?:((?:9\d|[2-9])\d{3})\-?(\d{4}))$/; // 📱 Valida formato internacional básico (ex: 5511999999999)
+            return regex.test(numero);
+        }
+    </script>
+</body>
+</html>

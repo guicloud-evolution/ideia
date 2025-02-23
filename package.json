@@ -1,0 +1,31 @@
+{
+    "name": "vabot-projeto",
+    "version": "1.0.0",
+    "description": "🤖 Sistema robusto para gerenciamento de múltiplas sessões do WhatsApp com Electron.js, Node.js e SQLite.",
+    "main": "main.js",
+    "scripts": {
+        "start": "npx electron .",
+        "dev": "nodemon main.js",
+        "reset-db": "node reset_bancos.js"
+    },
+    "keywords": [
+        "whatsapp-bot",
+        "electron",
+        "nodejs",
+        "sqlite",
+        "automação"
+    ],
+    "author": "Mauro Lucas Esteves",
+    "license": "MIT",
+    "dependencies": {
+        "dotenv": "^16.0.0",
+        "electron": "^25.0.0",
+        "puppeteer": "^24.2.1",
+        "qrcode": "^1.5.4",
+        "sqlite3": "^5.1.2",
+        "whatsapp-web.js": "^1.23.0"
+    },
+    "devDependencies": {
+        "nodemon": "^3.1.9"
+    }
+}

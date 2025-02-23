@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📩 Gerenciamento de Mensagens Automáticas</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container py-4">
+        <h2>💬 Gerenciamento de Mensagens Automáticas</h2>
+
+        <!-- 📝 Formulário para cadastro de mensagens automáticas -->
+        <form id="formMensagem" class="my-4">
+            <div class="mb-3">
+                <label for="tipoMensagem" class="form-label">Tipo de Mensagem</label>
+                <select id="tipoMensagem" class="form-select" required>
+                    <option value="saudacao">👋 Saudação</option>
+                    <option value="inatividade">⏳ Inatividade</option>
+                    <option value="personalizada">📝 Personalizada</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="mensagemTexto" class="form-label">Mensagem</label>
+                <textarea id="mensagemTexto" class="form-control" rows="3" required></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="imagemUpload" class="form-label">📁 Anexar Imagem (Opcional)</label>
+                <input type="file" id="imagemUpload" class="form-control" accept="image/*">
+                <div id="previewImagem" class="mt-2"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="tempoEnvio" class="form-label">⏰ Tempo para Envio</label>
+                <input type="number" id="tempoEnvio" class="form-control" min="0" placeholder="Deixe 0 para envio imediato">
+                <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" value="segundo" id="tempoSegundo">
+                    <label class="form-check-label" for="tempoSegundo">Segundo(s)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="minuto" id="tempoMinuto">
+                    <label class="form-check-label" for="tempoMinuto">Minuto(s)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="data" id="tempoData">
+                    <label class="form-check-label" for="tempoData">Data/Hora Específica</label>
+                </div>
+                <input type="datetime-local" id="dataHoraEnvio" class="form-control mt-2" style="display: none;">
+            </div>
+
+            <div class="mb-3">
+                <label for="limiteEnvio" class="form-label">📦 Limite de Contatos por Envio</label>
+                <input type="number" id="limiteEnvio" class="form-control" min="1" placeholder="Ex: 10">
+            </div>
+
+            <div class="mb-3">
+                <label for="qtdEnvio" class="form-label">🔢 Quantidade Máxima de Envios</label>
+                <input type="number" id="qtdEnvio" class="form-control" min="1" placeholder="Ex: 3">
+            </div>
+
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="ativaMensagem" checked>
+                <label class="form-check-label" for="ativaMensagem">⚡ Ativar esta mensagem</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">💾 Salvar Mensagem</button>
+        </form>
+
+        <!-- 📋 Lista de mensagens automáticas -->
+        <h3>📜 Mensagens Cadastradas</h3>
+        <ul id="listaMensagens" class="list-group"></ul>
+
+        <button class="btn btn-secondary mt-3" onclick="window.location.href='index.html'">🔙 Voltar</button>
+    </div>
+
+    <script>
+        const { ipcRenderer } = window.electron;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarMensagens();
+
+            // Exibir input de data/hora se a opção for marcada
+            document.getElementById('tempoData').addEventListener('change', function () {
+                const dataHoraInput = document.getElementById('dataHoraEnvio');
+                dataHoraInput.style.display = this.checked ? 'block' : 'none';
+            });
+
+            // Preview da imagem
+            document.getElementById('imagemUpload').addEventListener('change', function () {
+                const preview = document.getElementById('previewImagem');
+                preview.innerHTML = '';
+                const file = this.files[0];
+                if (file) {
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.style.maxWidth = '200px';
+                    img.classList.add('img-thumbnail');
+                    preview.appendChild(img);
+                }
+            });
+
+            document.getElementById('formMensagem').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const tipo = document.getElementById('tipoMensagem').value;
+                const mensagem = document.getElementById('mensagemTexto').value.trim();
+                const tempo = parseInt(document.getElementById('tempoEnvio').value) || 0;
+                const limiteEnvio = parseInt(document.getElementById('limiteEnvio').value) || 1;
+                const qtdEnvio = parseInt(document.getElementById('qtdEnvio').value) || 1;
+                const ativo = document.getElementById('ativaMensagem').checked;
+                const dataHoraEnvio = document.getElementById('dataHoraEnvio').value;
+
+                const tempoConfig = {
+                    segundo: document.getElementById('tempoSegundo').checked,
+                    minuto: document.getElementById('tempoMinuto').checked,
+                    data: document.getElementById('tempoData').checked,
+                    dataHora: dataHoraEnvio
+                };
+
+                const imagemFile = document.getElementById('imagemUpload').files[0];
+                let imagemPath = null;
+                if (imagemFile) {
+                    imagemPath = imagemFile.path;
+                }
+
+                const resultado = await ipcRenderer.invoke('salvar-mensagem-automatica', {
+                    tipo, mensagem, tempo, tempoConfig, limiteEnvio, qtdEnvio, ativo, imagemPath
+                });
+
+                if (resultado.sucesso) {
+                    alert('✅ Mensagem salva com sucesso!');
+                    carregarMensagens();
+                    e.target.reset();
+                    document.getElementById('previewImagem').innerHTML = '';
+                    document.getElementById('dataHoraEnvio').style.display = 'none';
+                } else {
+                    alert(`❌ Erro ao salvar mensagem: ${resultado.erro}`);
+                }
+            });
+        });
+
+        async function carregarMensagens() {
+            const lista = document.getElementById('listaMensagens');
+            const mensagens = await ipcRenderer.invoke('listar-mensagens-automaticas');
+            lista.innerHTML = mensagens.length > 0
+                ? mensagens.map(m => `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>📩 ${m.tipo.toUpperCase()}</strong>: ${m.mensagem}
+                            ${m.imagemPath ? `<br><img src="file://${m.imagemPath}" style="max-width:100px;" class="img-thumbnail mt-2"/>` : ''}
+                            <br><small>⏰ Tempo: ${m.tempo_envio || 'Imediato'} | 🔢 Limite: ${m.limite_envio} | 📦 Qtde: ${m.qtd_envio}</small>
+                            <span class="badge bg-${m.ativo ? 'success' : 'secondary'}">${m.ativo ? 'Ativa' : 'Inativa'}</span>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-warning" onclick="editarMensagem(${m.id})">✏️ Editar</button>
+                            <button class="btn btn-sm btn-danger" onclick="removerMensagem(${m.id})">🗑 Remover</button>
+                        </div>
+                    </li>`
+                ).join('')
+                : '<li class="list-group-item text-center">Nenhuma mensagem cadastrada.</li>';
+        }
+
+        async function editarMensagem(id) {
+            const novaMensagem = prompt("✏️ Edite a mensagem:");
+            if (novaMensagem) {
+                await ipcRenderer.invoke('editar-mensagem-automatica', { id, novaMensagem });
+                carregarMensagens();
+            }
+        }
+
+        async function removerMensagem(id) {
+            if (confirm('🗑 Tem certeza que deseja remover esta mensagem?')) {
+                await ipcRenderer.invoke('remover-mensagem-automatica', id);
+                carregarMensagens();
+            }
+        }
+    </script>
+</body>
+</html>

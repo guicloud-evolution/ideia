@@ -1,0 +1,176 @@
+/* 🌞 Tema Claro */
+body.light-mode {
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+body.light-mode .container {
+    background-color: #fff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .list-group-item {
+    background-color: #fff;
+    color: #333;
+}
+
+body.light-mode .btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+body.light-mode .message.received {
+    background-color: #e9f7ef;
+    border-color: #28a745;
+}
+
+/* 🌙 Tema Escuro */
+body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+body.dark-mode .container {
+    background-color: #1e1e1e;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .list-group-item {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+body.dark-mode .btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+body.dark-mode .message.received {
+    background-color: #252525;
+    border-color: #6c757d;
+}
+
+/* 💬 Estilização de Mensagens */
+.message {
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.message.received {
+    border-left: 4px solid #28a745;
+}
+
+/* 🖼 Preview de Imagens */
+#previewImagem img {
+    max-width: 250px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 🕒 Campos de Configuração de Tempo */
+input[type="datetime-local"],
+input[type="number"],
+textarea,
+select {
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    transition: border-color 0.3s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #0d6efd;
+}
+
+/* 🔢 Controle de Envio */
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* 🖇 Lista de Mensagens Automáticas */
+#listaMensagens .list-group-item {
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 10px;
+    transition: background-color 0.3s ease;
+}
+
+#listaMensagens .badge {
+    font-size: 0.8rem;
+    padding: 5px 10px;
+    border-radius: 20px;
+}
+
+/* 🏃 Botões Dinâmicos */
+.btn-success,
+.btn-warning,
+.btn-danger {
+    border-radius: 20px;
+    padding: 8px 15px;
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.btn-warning:hover {
+    background-color: #ffc107;
+    border-color: #ffc107;
+}
+
+.btn-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+/* 🎨 Efeitos e Transições */
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 🌈 Diferenciação de Tipos de Mensagens */
+.tipo-saudacao {
+    border-left: 5px solid #0d6efd;
+}
+
+.tipo-inatividade {
+    border-left: 5px solid #ffc107;
+}
+
+.tipo-personalizada {
+    border-left: 5px solid #198754;
+}
+
+/* 📱 Layout Responsivo */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    #previewImagem img {
+        max-width: 100%;
+    }
+
+    .message {
+        font-size: 0.9rem;
+    }
+}
